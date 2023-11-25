@@ -8,13 +8,19 @@ alpha = 0.03#0.025
 threshold = 10.5
 threshold2 = 11.5
 
-# Smoothing algorithm to be applied as an accumulator to an array.
-# This will be applied element-wise to the array, where:
-#   - s is the previous element, which has already been smoothed
-#   - x is the current element, which will be smoothed
-def smooth(s, x):
-    global alpha
-    return alpha * x + (1 - alpha) * s
+def smooth_ewma(data, a):
+    '''
+    Smooth the provided data using an exponential weighted moving average
+
+    Params:
+        data: The raw data to be smoothed
+        a: alpha value for the EWMA
+    '''
+    assert 0 <= a <= 1
+    # Apply the smoothing algorithm element-wise to the array, where:
+    #   - s is the previous element, which has already been smoothed
+    #   - x is the current element to be smoothed
+    return np.frompyfunc(lambda s,x: a * x + (1 - a) * s, 2, 1).accumulate(data)
 
 # FIXME This doesn't seem like it's the same as what was shown in lecture, but it provides better results than the EWMA
 # Based off https://www.askpython.com/python/weighted-moving-average
@@ -35,16 +41,15 @@ def weightedmovingaverage(data, k):
     return weighted
 
 if __name__ == '__main__':
-    # Create a ufunc from the smoothing algorithm
-    smoothu = np.frompyfunc(smooth, 2, 1)
-
     # Get data
     # usecols is specified to handle the trailing commas in the dataset
     df = pd.read_csv('datasets/WALKING.csv', usecols=['timestamp', 'accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'mag_x', 'mag_y', 'mag_z'])
     accel_z = df['accel_z'].values
 
     # Smooth data
-    accel_z_filtered = smoothu.accumulate(accel_z)
+    # Exponential weighted moving average with alpha=0.03
+    accel_z_filtered = smooth_ewma(accel_z, 0.03)
+    # Weighted moving average with sample size of 50
     accel_z_filtered2 = weightedmovingaverage(accel_z, 50)
 
     # REMOVE ???
