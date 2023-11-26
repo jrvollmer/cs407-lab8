@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def integrate(data, time):
-    """Expecting data to be an array of shape (n, 2) and time to be an array of shape (n,)"""
     if data.shape != time.shape:
         time = np.repeat(time, data.shape[1]).reshape(data.shape)
         return (data[:-1,...] + ((data[1:,...] - data[:-1,...]) / 2)).cumsum(axis=0) * (time[1:,...] - time[:-1,...])

@@ -40,10 +40,7 @@ def weightedmovingaverage(data, k):
         weighted.append(wma)
     return weighted
 
-if __name__ == '__main__':
-    # Get data
-    # usecols is specified to handle the trailing commas in the dataset
-    df = pd.read_csv('datasets/WALKING.csv', usecols=['timestamp', 'accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'mag_x', 'mag_y', 'mag_z'])
+def do_the_thing(df):
     accel_z = df['accel_z'].values
 
     # Smooth data
@@ -70,7 +67,6 @@ if __name__ == '__main__':
         if accel_z_filtered2[i] <= threshold2 and accel_z_filtered2[i+1] >= threshold2:
             num_steps2 += 1
             intersection_times2 += [df['timestamp'].values[i]]
-            #intersection_times.append(df['timestamp'].values[i])
 
     print(num_steps) # REMOVE
     print(intersection_times) # REMOVE
@@ -149,3 +145,11 @@ if __name__ == '__main__':
 
     plt.show()
     '''
+
+
+if __name__ == '__main__':
+    # Get data
+    # usecols is specified to handle the trailing commas in the dataset
+    df = pd.read_csv('datasets/WALKING.csv', usecols=['timestamp', 'accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'mag_x', 'mag_y', 'mag_z'])
+
+    do_the_thing(df)

@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 import milestone1 as ms1
 import milestone2 as ms2
 
-def find_turns(gyro_data, data, turn_increment):
-    # Only allow a tolerance if the turn increment is at least twice the tolerance
-    tolerance = np.pi/32 if turn_increment >= np.pi/16 else 0
-    cw_bounds, ccw_bounds = get_turn_bounds(gyro_data)
+def find_turns(gyro_data, data, turn_increment, threshold=0.25, tolerance=np.pi/32):
+    # Limit the tolerance to at most half the turn increment 
+    tolerance = (turn_increment / 2) if (turn_increment <= tolerance * 2) else tolerance
+    cw_bounds, ccw_bounds = get_turn_bounds(gyro_data, threshold)
     cw_turns = []
     ccw_turns = []
     idx = 0
@@ -27,11 +27,13 @@ def find_turns(gyro_data, data, turn_increment):
         # Find the next index of data where the angle changes by turn_increment
         idx_tmp = np.argmax(data[idx:turn_end] <= init_angle - turn_increment + tolerance)
         while idx_tmp != 0:
+            print(init_angle, "-", data[turn_end - 1], "=", init_angle - data[turn_end - 1])
             idx += idx_tmp
             increments += 1
             idx_tmp = np.argmax(data[idx:turn_end] <= init_angle - (increments+1) * turn_increment + tolerance)
-        # Record middle index and turn angle
-        cw_turns.append([np.floor((cw_bounds[i][0] + turn_end) / 2).astype(int), -increments * turn_increment])
+        if increments > 0:
+            # Record middle index and turn angle
+            cw_turns.append([np.floor((cw_bounds[i][0] + turn_end) / 2).astype(int), -increments * turn_increment])
     # Record CCW turns
     for i in range(len(ccw_bounds)):
         # Bounds and initial angle of the current turn
@@ -47,11 +49,13 @@ def find_turns(gyro_data, data, turn_increment):
         # Find the next index of data where the angle changes by turn_increment
         idx_tmp = np.argmax(data[idx:turn_end] >= init_angle + turn_increment - tolerance)
         while idx_tmp != 0:
+            print(init_angle, "-", data[turn_end - 1], "=", init_angle - data[turn_end - 1])
             idx += idx_tmp
             increments += 1
             idx_tmp = np.argmax(data[idx:turn_end] >= init_angle + (increments+1) * turn_increment - tolerance)
-        # Record middle index and turn angle
-        ccw_turns.append([np.floor((ccw_bounds[i][0] + turn_end) / 2).astype(int), increments * turn_increment])
+        if increments > 0:
+            # Record middle index and turn angle
+            ccw_turns.append([np.floor((ccw_bounds[i][0] + turn_end) / 2).astype(int), increments * turn_increment])
     return cw_turns, ccw_turns
 
 
@@ -87,21 +91,18 @@ def get_turn_bounds(data, threshold=0.25):
     return cw_turn_bounds, ccw_turn_bounds
 
 
-if __name__ == '__main__':
-    # Get data from csv
-    df = pd.read_csv('datasets/TURNING.csv', usecols=['timestamp', 'accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'mag_x', 'mag_y', 'mag_z'])
-
+def do_the_thing(df, alpha, turn_inc, threshold=0.25, tolerance=np.pi/32):
     # Change timestamps to be seconds since start
     df['timestamp'] -= df['timestamp'][0]
     df['timestamp'] /= 10**9
     time = df['timestamp'].to_numpy()
-    # Smooth angular rate of change using an EWMA with alpha=0.12
-    smooth_gyro_z = ms2.smooth_ewma(df['gyro_z'].values, 0.12)
+    # Smooth angular rate of change using an EWMA with specified alpha
+    smooth_gyro_z = ms2.smooth_ewma(df['gyro_z'].values, alpha)
     # Integrate angular rate of change from smoothed gyro_z to get angular displacement
     theta_z = np.concatenate(([0], ms1.integrate(smooth_gyro_z, time)))
-    # Detect turns of increments of pi/2 from angular rate of change and angular displacement
-    cw_turns, ccw_turns = find_turns(smooth_gyro_z, theta_z, np.pi/2)
-    # Mask theta_z to only show turns
+    # Detect turns of specified increments from angular rate of change and angular displacement
+    cw_turns, ccw_turns = find_turns(smooth_gyro_z, theta_z, turn_inc, threshold, tolerance)
+    # Mask theta_z to only show turns REMOVE
     print("CW:", cw_turns) # DEBUG
     print("CCW:", ccw_turns) # DEBUG
     cw_turn_theta_z = theta_z[np.ravel(cw_turns)[::2].astype(int)]
@@ -119,6 +120,11 @@ if __name__ == '__main__':
     axs[0].set_title('Angular Rate of Change')
     axs[0].set_ylabel('Angular Rate of Change (rad / s)')
     axs[0].set_xlabel('Time (s)')
+    threshold_line = np.full(df['timestamp'].to_numpy().shape, threshold)
+    axs[0].plot(df['timestamp'].values, threshold_line, label='Threshold (+)', color='#0080ff')
+    axs[0].fill_between(df['timestamp'].values, threshold_line*0.5, threshold_line*1.5, color='#0080ff', alpha=0.25)
+    axs[0].plot(df['timestamp'].values, -threshold_line, label='Threshold (-)', color='#00ff80')
+    axs[0].fill_between(df['timestamp'].values, threshold_line*-1.5, threshold_line*-0.5, color='#00ff80', alpha=0.25)
     axs[0].plot(time, df['gyro_z'].values, label='Raw', color='#00f000')
     axs[0].plot(time, smooth_gyro_z, label='Smoothed', color='#f00000')
     axs[0].legend()
@@ -128,7 +134,7 @@ if __name__ == '__main__':
     axs[1].set_xlabel('Time (s)')
     axs[1].axhline(color="#000000")
     axs[1].plot(time, np.concatenate(([0], ms1.integrate(df['gyro_z'].values, time))), label='Raw', color='#00b000')
-    axs[1].plot(time, theta_z, label='Smoothed', color='#b00000')
+    axs[1].plot(time, np.concatenate(([0], ms1.integrate(smooth_gyro_z, time))), label='Smoothed', color='#b00000')
     axs[1].vlines(np.concatenate((cw_tstamp, ccw_tstamp)), 0, np.concatenate((np.array(cw_turns)[:,1], np.array(ccw_turns)[:,1])) , label='Turns', color='#0000ff')
     axs[1].legend()
     
@@ -159,3 +165,10 @@ if __name__ == '__main__':
     '''
 
     plt.show()
+
+
+
+if __name__ == '__main__':
+    # Get data from csv
+    df = pd.read_csv('datasets/TURNING.csv', usecols=['timestamp', 'accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'mag_x', 'mag_y', 'mag_z'])
+    do_the_thing(df, 0.12, np.pi/2)
