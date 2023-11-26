@@ -8,7 +8,6 @@ def integrate(data, time):
         return (data[:-1,...] + ((data[1:,...] - data[:-1,...]) / 2)).cumsum(axis=0) * (time[1:,...] - time[:-1,...])
     else:
         return (data[:-1] + ((data[1:] - data[:-1]) / 2)).cumsum(axis=0) * (time[1:] - time[:-1])
-        #raise ValueError("data and time must have the same number of rows")
 
 if __name__ == '__main__':
     # Get data and calculate desired values

@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Smoothing factor (0 <= alpha <= 1)
-alpha = 0.03#0.025
+alpha = 0.03
 # Threshold for step detection
 threshold = 10.5
 threshold2 = 11.5
@@ -40,7 +40,10 @@ def weightedmovingaverage(data, k):
         weighted.append(wma)
     return weighted
 
-def do_the_thing(df):
+if __name__ == '__main__':
+    # Get data
+    # usecols is specified to handle the trailing commas in the dataset
+    df = pd.read_csv('datasets/WALKING.csv', usecols=['timestamp', 'accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'mag_x', 'mag_y', 'mag_z'])
     accel_z = df['accel_z'].values
 
     # Smooth data
@@ -49,11 +52,8 @@ def do_the_thing(df):
     # Weighted moving average with sample size of 50
     accel_z_filtered2 = weightedmovingaverage(accel_z, 50)
 
-    # REMOVE ???
-    print(df['timestamp'][0], df.at[df.index[-1], 'timestamp'])
     df['timestamp'] -= df['timestamp'][0]
     df['timestamp'] /= 10**9
-    print(df['timestamp'][0], df.at[df.index[-1], 'timestamp'])
 
     # Count steps by counting intersections of the smoothed data with a threshold value
     num_steps = 0
@@ -93,63 +93,3 @@ def do_the_thing(df):
     ax.legend()
 
     plt.show()
-
-    # REMOVE
-    '''
-    accel_x_filtered = smoothu.accumulate(df['accel_x'].values)
-    accel_y_filtered = smoothu.accumulate(df['accel_y'].values)
-    gyro_x_filtered = smoothu.accumulate(df['gyro_x'].values)
-    gyro_y_filtered = smoothu.accumulate(df['gyro_y'].values)
-    gyro_z_filtered = smoothu.accumulate(df['gyro_z'].values)
-    mag_x_filtered = np.concatenate(([0], smoothu.accumulate(df['mag_x'].values[1:])))
-    mag_y_filtered = np.concatenate(([0], smoothu.accumulate(df['mag_y'].values[1:])))
-    mag_z_filtered = np.concatenate(([0], smoothu.accumulate(df['mag_z'].values[1:])))
-
-
-    fig, axs = plt.subplots(3, sharex=False, sharey=False)
-    fig.canvas.manager.set_window_title('Milestone 2')
-    fig.tight_layout()
-
-    axs[0].set_title('Acceleration')
-    axs[0].set_ylabel('Acceleration (m / s²)')
-    axs[0].set_xlabel('Time (s)')
-    axs[0].plot(df['timestamp'].values, df['accel_x'].values, label='X', color='#800000')
-    axs[0].plot(df['timestamp'].values, accel_x_filtered, label='X (filtered)', color='#ff0000')
-    axs[0].plot(df['timestamp'].values, df['accel_y'].values, label='Y', color='#008000')
-    axs[0].plot(df['timestamp'].values, accel_y_filtered, label='Y (filtered)', color='#00ff00')
-    axs[0].plot(df['timestamp'].values, accel_z, label='Z', color='#f08000')
-    axs[0].plot(df['timestamp'].values, accel_z_filtered, label='Z (filtered)', color='#0000ff')
-    axs[0].legend()
-
-    axs[1].set_title('Gyro')
-    axs[1].set_ylabel('Angular Rate of Change (rad / s)')
-    axs[1].set_xlabel('Time (s)')
-    axs[1].plot(df['timestamp'].values, df['gyro_x'].values, label='X', color='#00f080')
-    axs[1].plot(df['timestamp'].values, gyro_x_filtered, label='X (filtered)', color='#ff0000')
-    axs[1].plot(df['timestamp'].values, df['gyro_y'].values, label='Y', color='#f00080')
-    axs[1].plot(df['timestamp'].values, gyro_y_filtered, label='Y (filtered)', color='#00ff00')
-    axs[1].plot(df['timestamp'].values, df['gyro_z'].values, label='Z', color='#f08000')
-    axs[1].plot(df['timestamp'].values, gyro_z_filtered, label='Z (filtered)', color='#0000ff')
-    axs[1].legend()
-
-    axs[2].set_title('Magnetometer')
-    axs[2].set_ylabel('Magnetic Flux Density (uT)')
-    axs[2].set_xlabel('Time (s)')
-    axs[2].plot(df['timestamp'].values, df['mag_x'].values, label='X', color='#800000')
-    axs[2].plot(df['timestamp'].values, mag_x_filtered, label='X (filtered)', color='#ff0000')
-    axs[2].plot(df['timestamp'].values, df['mag_y'].values, label='Y', color='#008000')
-    axs[2].plot(df['timestamp'].values, mag_y_filtered, label='Y (filtered)', color='#00ff00')
-    axs[2].plot(df['timestamp'].values, df['mag_z'].values, label='Z', color='#000080')
-    axs[2].plot(df['timestamp'].values, mag_z_filtered, label='Z (filtered)', color='#0000ff')
-    axs[2].legend()
-
-    plt.show()
-    '''
-
-
-if __name__ == '__main__':
-    # Get data
-    # usecols is specified to handle the trailing commas in the dataset
-    df = pd.read_csv('datasets/WALKING.csv', usecols=['timestamp', 'accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'mag_x', 'mag_y', 'mag_z'])
-
-    do_the_thing(df)
