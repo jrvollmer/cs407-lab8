@@ -104,8 +104,8 @@ if __name__ == '__main__':
     theta_z = np.concatenate(([0], ms1.integrate(smooth_gyro_z, time)))
     # Detect turns of specified increments from angular rate of change and angular displacement
     cw_turns, ccw_turns = find_turns(smooth_gyro_z, theta_z, np.pi/2)
-    print("CW:", cw_turns) # DEBUG
-    print("CCW:", ccw_turns) # DEBUG
+    print("CW:", cw_turns)
+    print("CCW:", ccw_turns)
 
     # Mask timestamps for plotting turn points
     cw_tstamp = time[np.ravel(cw_turns)[::2].astype(int)]
