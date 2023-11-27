@@ -37,7 +37,7 @@ if __name__ == '__main__':
     num_steps = 0
     intersection_times = []
     for i in range(len(df['timestamp'].values) - 1):
-        if accel_z_filtered[i] <= threshold and accel_z_filtered[i+1] >= threshold:
+        if accel_z_filtered[i] <= threshold and accel_z_filtered[i+1] > threshold:
             num_steps += 1
             intersection_times += [df['timestamp'].values[i]]
 

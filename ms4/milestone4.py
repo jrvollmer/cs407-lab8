@@ -28,8 +28,8 @@ if __name__ == '__main__':
     cw_turns, ccw_turns = ms3.find_turns(smooth_gyro_z, theta_z, np.pi/4, 0.125)
     cw_turns = np.array(cw_turns)
     ccw_turns = np.array(ccw_turns)
-    print("CW:", cw_turns) # DEBUG
-    print("CCW:", ccw_turns) # DEBUG
+    print("CW:", cw_turns)
+    print("CCW:", ccw_turns)
 
 
     # -------------------------------------------------------------
@@ -45,17 +45,15 @@ if __name__ == '__main__':
     # Count steps by counting intersections of the smoothed data with a threshold value
     num_steps = 0
     intersection_indices = []
-    intersection_times = [] # REMOVE
-    intersection_accs = [] # REMOVE
+    intersection_times = []
     for i in range(len(time) - 1):
-        if smooth_accel_z[i] <= threshold and smooth_accel_z[i+1] >= threshold:
+        if smooth_accel_z[i] <= threshold and smooth_accel_z[i+1] > threshold:
             num_steps += 1
             intersection_indices += [i]
             intersection_times += [time[i]]
-            intersection_accs += [smooth_accel_z[i]]
 
-    print(num_steps) # REMOVE
-    print(intersection_times) # REMOVE
+    print(num_steps)
+    print(intersection_times)
 
 
     # -------------------------------------------------------------
