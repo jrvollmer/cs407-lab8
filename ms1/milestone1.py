@@ -3,6 +3,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def integrate(data, time):
+    '''
+    Integrate the provided dataset, data, over the time series, time
+
+    data: dataset to integrate. Its Nth dimension must match the length of the time series
+    time: time series to integrate over
+    '''
     if data.shape != time.shape:
         time = np.repeat(time, data.shape[1]).reshape(data.shape)
         return (data[:-1,...] + ((data[1:,...] - data[:-1,...]) / 2)).cumsum(axis=0) * (time[1:,...] - time[:-1,...])

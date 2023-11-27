@@ -2,8 +2,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Smoothing factor (0 <= alpha <= 1)
-alpha = 0.03
 # Threshold for step detection
 threshold = 10.5
 
@@ -43,8 +41,8 @@ if __name__ == '__main__':
             num_steps += 1
             intersection_times += [df['timestamp'].values[i]]
 
-    print(num_steps) # REMOVE
-    print(intersection_times) # REMOVE
+    print(num_steps)
+    print(intersection_times)
 
 
     # Plot results
@@ -56,9 +54,6 @@ if __name__ == '__main__':
     ax.set_xlabel('Time (s)')
     ax.plot(df['timestamp'].values, accel_z, label='Z', color='#f08000')
     ax.plot(df['timestamp'].values, accel_z_filtered, label='Z (EWMA)', color='#0000ff')
-    threshold_line = np.full(df['timestamp'].to_numpy().shape, threshold)
-    ax.plot(df['timestamp'].values, threshold_line, label='Threshold', color='#00f0ff')
-    ax.fill_between(df['timestamp'].values, threshold_line-0.5, threshold_line+0.5, color='#00f0ff', alpha=0.25)
     ax.legend()
 
     plt.show()

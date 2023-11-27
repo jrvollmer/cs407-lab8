@@ -5,6 +5,16 @@ import ms1.milestone1 as ms1
 import ms2.milestone2 as ms2
 
 def find_turns(gyro_data, data, turn_increment, threshold=0.25, tolerance=np.pi/32):
+    '''
+    Returns two 2D arrays containing the midpoint index and angle of each CW and CCW turn
+ 
+    data: array containing angular rate of change data
+    data: array containing angular displacement data
+    turn_increment: the expecte increments of which valid turns will be
+        - e.g. turn_increment=pi/2 means valid turns are ..., -pi, -pi/2, 0, pi/2, pi, ...
+    threshold: the minimum angular rate of change (rad/s) to be considered the start/end of a turn
+    tolerance: the maximum amount by which a recorded turn can be closer to 0 than the final multiple of turn_increment
+    '''
     # Limit the tolerance to at most half the turn increment 
     tolerance = (turn_increment / 2) if (turn_increment <= tolerance * 2) else tolerance
     cw_bounds, ccw_bounds = get_turn_bounds(gyro_data, threshold)
@@ -88,9 +98,9 @@ if __name__ == '__main__':
     df['timestamp'] /= 10**9
     time = df['timestamp'].to_numpy()
 
-    # Smooth angular rate of change using an EWMA with specified alpha
+    # Smooth angular rate of change using an EWMA with specified alpha (0.12)
     smooth_gyro_z = ms2.smooth_ewma(df['gyro_z'].values, 0.12)
-    # Integrate angular rate of change from smoothed gyro_z to get angular displacement
+    # Integrate angular rate of change from smoothed gyro_z data to get angular displacement
     theta_z = np.concatenate(([0], ms1.integrate(smooth_gyro_z, time)))
     # Detect turns of specified increments from angular rate of change and angular displacement
     cw_turns, ccw_turns = find_turns(smooth_gyro_z, theta_z, np.pi/2)
