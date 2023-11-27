@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-import milestone1 as ms1
-import milestone2 as ms2
-import milestone3 as ms3
+import ms1.milestone1 as ms1
+import ms2.milestone2 as ms2
+import ms3.milestone3 as ms3
 
 
 if __name__ == '__main__':

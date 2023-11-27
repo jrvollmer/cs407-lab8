@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import milestone1 as ms1
-import milestone2 as ms2
+import ms1.milestone1 as ms1
+import ms2.milestone2 as ms2
 
 def find_turns(gyro_data, data, turn_increment, threshold=0.25, tolerance=np.pi/32):
     # Limit the tolerance to at most half the turn increment 
@@ -114,7 +114,7 @@ if __name__ == '__main__':
     axs[0].fill_between(df['timestamp'].values, threshold_line*0.5, threshold_line*1.5, color='#0080ff', alpha=0.25)
     axs[0].plot(df['timestamp'].values, -threshold_line, label='Threshold (-)', color='#00ff80')
     axs[0].fill_between(df['timestamp'].values, threshold_line*-1.5, threshold_line*-0.5, color='#00ff80', alpha=0.25)
-    axs[0].plot(time, df['gyro_z'].values, label='Raw', color='#00f000')
+    axs[0].plot(time, df['gyro_z'].values, label='Raw', color='#808000')
     axs[0].plot(time, smooth_gyro_z, label='Smoothed', color='#f00000')
     axs[0].legend()
 
